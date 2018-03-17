@@ -244,12 +244,22 @@ if __name__ == "__main__":
 
     import time
 
-    comport = sys.argv[1]
+    try:
+        comport = sys.argv[1]
+    except IndexError:
+        print("Device required. Example: /dev/ttyUSB0")
+        sys.exit()
     
     # Previous Script had multiple arguments, commented this out for different usage
     #
     #command = int( sys.argv[2], 0)
-    index = str( sys.argv[2] )
+
+    try:
+        index = str( sys.argv[2] )
+    except IndexError:
+        print("Domoticz variables required. This script can not be executed without it")
+        sys.exit()
+
     index = index.split(',')
 
     print("Parameter specified: ")
