@@ -308,8 +308,8 @@ for i in kamstrup_402_var:
             device_value = device_data['result'][0]['Data']
 
             # 0 = Update current
-            # 1 = Calculate diffirence
-            # 2 = Add up
+            # 1 = Substraction
+            # 2 = Addition
             if opt == 0:
                 # Submit the current value to the device
                 #print("+ Overiwrite: " + str(device_name) + " (idx: " + str(idx) + ") with latest value: " + str(value)) 
