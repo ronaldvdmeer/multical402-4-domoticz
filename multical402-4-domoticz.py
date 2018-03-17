@@ -306,29 +306,51 @@ for i in kamstrup_402_var:
 
             # 0 = Update current
             # 1 = Calculate diffirence
+            # 2 = Add up
             if opt == 0:
                 # Submit the current value to the device
                 print("+ Overwrite: " + str(device_name) + " (idx: " + str(idx) + ") with latest value: " + str(value)) 
+		
             elif opt == 1:
                 if compare_idx > 0:
                     requestGet = ( "http://" + str(domoip) + ":" + str(domoport) + "/json.htm?type=devices&rid=" + str(compare_idx) )
                     device_compare_data = json.load(reader(urllib.request.urlopen(requestGet)))
                     device_compare_name = device_compare_data['result'][0]['Name']
                     device_compare_value = device_compare_data['result'][0]['Data']
-                    # Remove the GJ and split on a whitespace delimiter
                     device_compare_value = device_compare_value.split(' ')
                     device_compare_value = device_compare_value[0]
                     diff = float(value) - float(device_compare_value)
                     
                     print("+ Calculate difference between " + str(device_name) + " (idx: " + str(idx) + ") and " + str(device_compare_name) + " (idx: " + str(compare_idx) + ")")
-                    #print("+ Stored: " + str(device_compare_value) + " / Current: " + str(value) + " / Difference: " + str(value) )
+                    print("+ Stored: " + str(device_compare_value) + " / Current: " + str(value) + " / Difference: " + str(diff) )
                     value = diff
+
+            elif opt == 2:
+                if compare_idx > 0:
+                    # Remove the GJ and split on a whitespace delimiter
+                    device_value = device_value.split(' ')
+                    device_value = device_value[0]
+                    
+                    requestGet = ( "http://" + str(domoip) + ":" + str(domoport) + "/json.htm?type=devices&rid=" + str(compare_idx) )
+                    device_compare_data = json.load(reader(urllib.request.urlopen(requestGet)))
+                    device_compare_name = device_compare_data['result'][0]['Name']
+                    device_compare_value = device_compare_data['result'][0]['Data']
+                    device_compare_value = device_compare_value.split(' ')
+                    device_compare_value = device_compare_value[0]
+                    diff = float(value) - float(device_compare_value)
+                    addup = float(diff) + float(device_value)
+                    
+                    print("+ Stored: " + str(device_compare_value) + " / Current: " + str(value) + " / Difference: " + str(diff) )
+                    print("+ Add " + str(device_value) + " (" + str(device_name) + "/idx: " + str(idx) + ") + " + str(diff))
+                    value = addup
 
             # Upload the current value to the device
             print("+ Submit to: " + str(device_name) + " (idx: " + str(idx) + ") with value: " + str(value)) 
             requestPost = ( "http://" + str(domoip) + ":" + str(domoport) + "/json.htm?type=command&param=udevice&idx=" + str(idx) + "&svalue=" + str(value) )
+            print(requestPost)
             resultPost = urllib.request.urlopen(requestPost)
             print("")
+
 print ("---------------------------------------------------------------------------------------")
 print ("End data received: %s" % heat_timestamp)
 print ("=======================================================================================") 
