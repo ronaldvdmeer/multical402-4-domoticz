@@ -1,6 +1,6 @@
 # multical402-4-domoticz
 
-This script is developed for domoticz and a Kamstrup Multical 402 (city heating)  
+This script is developed for use with domoticz and a Kamstrup Multical 402 (city heating)  
 
 Dependency:
  * Software: linux, python3 and python3-serial  
