@@ -248,11 +248,13 @@ if __name__ == "__main__":
     
     # Previous Script had multiple arguments, commented this out for different usage
     #
-    command = int( sys.argv[2], 0)
-    index = int( sys.argv[3], 0)
+    #command = int( sys.argv[2], 0)
+    index = str( sys.argv[2] )
+    index = index.split(',')
 
-    # Define idx of warmtetotaal
-    warmtetotaal = int(321)    
+    print("Parameter specified: ")
+    for i in index:
+        print("+ " + i)
 
     foo = kamstrup( comport )
     heat_timestamp=datetime.datetime.strftime(datetime.datetime.today(), "%Y-%m-%d %H:%M:%S" )
@@ -271,32 +273,52 @@ for i in kamstrup_402_var:
     
     print("%-25s" % kamstrup_402_var[i], x, u)
     
-    # If decimal number matches the command given as argv[2]
-    if i == command:
-        value = x
+    for y in index:
+        paramater = y.split(':')
+        idx = int(paramater[0],0)
+        dcNr = int(paramater[1],0)
+        opt = int(paramater[2],0)
 
-	# Retrieving the old Heat Energy (E1) stored in domoticz, defined as variable warmtetotaal
-        requestGet = ( "http://" + str(domoip) + ":" + str(domoport) + "/json.htm?type=devices&rid=" + str(warmtetotaal) )
-        device_data = json.load(reader(urllib.request.urlopen(requestGet)))
-        meterstand = device_data['result'][0]['Data']
+        try:
+            compare_idx = int(paramater[3],0)
+        except IndexError:
+            compare_idx = 0
         
-        # Remove the GJ and split on a whitespace delimiter
-        meterstand = meterstand.split(' ')
-        meterstand = meterstand[0]
+        # If decimal number matches the command given as argv[2]
+        if i == dcNr:
+            value = x
 
-        # Calculate the difference between old E1 (meterstand) and current E1 value from the Multical 402 
-        diff = float(value) - float(meterstand)
-        
-        print( "Was: " + str(meterstand) + " / Is: " + str(value) + " / Diff: " + str(diff) )
+            # Retrieve devicename and devicedata
+            requestGet = ( "http://" + str(domoip) + ":" + str(domoport) + "/json.htm?type=devices&rid=" + str(idx) )
+            device_data = json.load(reader(urllib.request.urlopen(requestGet)))
+            device_name = device_data['result'][0]['Name']
+            device_value = device_data['result'][0]['Data']
 
-        # Upload the difference between old and new and submit it to the virtual device showing the current usage
-        requestPost = ( "http://" + str(domoip) + ":" + str(domoport) + "/json.htm?type=command&param=udevice&idx=" + str(index) + "&svalue=" + str(diff) )
-        resultPost = urllib.request.urlopen(requestPost)
-        
-        # Upload the current E1 to the warmtetool virtual device
-        requestPost = ( "http://" + str(domoip) + ":" + str(domoport) + "/json.htm?type=command&param=udevice&idx=" + str(warmtetotaal) + "&svalue=" + str(value) )
-        resultPost = urllib.request.urlopen(requestPost)
+            # 0 = Update current
+            # 1 = Calculate diffirence
+            if opt == 0:
+                # Submit the current value to the device
+                print("+ Overwrite: " + str(device_name) + " (idx: " + str(idx) + ") with latest value: " + str(value)) 
+            elif opt == 1:
+                if compare_idx > 0:
+                    requestGet = ( "http://" + str(domoip) + ":" + str(domoport) + "/json.htm?type=devices&rid=" + str(compare_idx) )
+                    device_compare_data = json.load(reader(urllib.request.urlopen(requestGet)))
+                    device_compare_name = device_compare_data['result'][0]['Name']
+                    device_compare_value = device_compare_data['result'][0]['Data']
+                    # Remove the GJ and split on a whitespace delimiter
+                    device_compare_value = device_compare_value.split(' ')
+                    device_compare_value = device_compare_value[0]
+                    diff = float(value) - float(device_compare_value)
+                    
+                    print("+ Calculate difference between " + str(device_name) + " (idx: " + str(idx) + ") and " + str(device_compare_name) + " (idx: " + str(compare_idx) + ")")
+                    #print("+ Stored: " + str(device_compare_value) + " / Current: " + str(value) + " / Difference: " + str(value) )
+                    value = diff
 
+            # Upload the current value to the device
+            print("+ Submit to: " + str(device_name) + " (idx: " + str(idx) + ") with value: " + str(value)) 
+            requestPost = ( "http://" + str(domoip) + ":" + str(domoport) + "/json.htm?type=command&param=udevice&idx=" + str(idx) + "&svalue=" + str(value) )
+            resultPost = urllib.request.urlopen(requestPost)
+            print("")
 print ("---------------------------------------------------------------------------------------")
 print ("End data received: %s" % heat_timestamp)
 print ("=======================================================================================") 
