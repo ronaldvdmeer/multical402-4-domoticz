@@ -30,8 +30,10 @@ import codecs
 # Variables
 
 reader = codecs.getreader("utf-8")
+
 domoip = "192.168.1.12"
 domoport = "8080"
+debug = 0
 
 kamstrup_402_var = {                # Decimal Number in Command
  0x003C: "Heat Energy (E1)",        #60
@@ -262,9 +264,10 @@ if __name__ == "__main__":
 
     index = index.split(',')
 
-    print("Parameter specified: ")
-    for i in index:
-        print("+ " + i)
+    if debug > 0: 
+        print("Parameter specified: ")
+        for i in index:
+            print("+ " + i)
 
     foo = kamstrup( comport )
     heat_timestamp=datetime.datetime.strftime(datetime.datetime.today(), "%Y-%m-%d %H:%M:%S" )
@@ -309,8 +312,8 @@ for i in kamstrup_402_var:
             # 2 = Add up
             if opt == 0:
                 # Submit the current value to the device
-                print("+ Overwrite: " + str(device_name) + " (idx: " + str(idx) + ") with latest value: " + str(value)) 
-		
+                #print("+ Overiwrite: " + str(device_name) + " (idx: " + str(idx) + ") with latest value: " + str(value)) 
+                dummyvar = 0
             elif opt == 1:
                 if compare_idx > 0:
                     requestGet = ( "http://" + str(domoip) + ":" + str(domoport) + "/json.htm?type=devices&rid=" + str(compare_idx) )
@@ -321,13 +324,13 @@ for i in kamstrup_402_var:
                     device_compare_value = device_compare_value[0]
                     diff = float(value) - float(device_compare_value)
                     
-                    print("+ Calculate difference between " + str(device_name) + " (idx: " + str(idx) + ") and " + str(device_compare_name) + " (idx: " + str(compare_idx) + ")")
-                    print("+ Stored: " + str(device_compare_value) + " / Current: " + str(value) + " / Difference: " + str(diff) )
+                    if debug > 0: 
+                        print("+ Substract " + str(device_compare_value) + " (idx:" + str(compare_idx) + ") from " + str(value) + " (idx:" + str(idx) + ") = " + str(diff) )
+                    
                     value = diff
 
             elif opt == 2:
                 if compare_idx > 0:
-                    # Remove the GJ and split on a whitespace delimiter
                     device_value = device_value.split(' ')
                     device_value = device_value[0]
                     
@@ -340,17 +343,17 @@ for i in kamstrup_402_var:
                     diff = float(value) - float(device_compare_value)
                     addup = float(diff) + float(device_value)
                     
-                    print("+ Stored: " + str(device_compare_value) + " / Current: " + str(value) + " / Difference: " + str(diff) )
-                    print("+ Add " + str(device_value) + " (" + str(device_name) + "/idx: " + str(idx) + ") + " + str(diff))
+                    if debug > 0: 
+                        print("+ Add " + str(device_value) + " (idx:" + str(idx) + ") + " + str(diff) + " (" + str(value) + " (idx:" + str(idx) + ") - " + str(device_compare_value) + " (idx:" + str(compare_idx) + ")) = " + str(addup) )
+
                     value = addup
 
             # Upload the current value to the device
-            print("+ Submit to: " + str(device_name) + " (idx: " + str(idx) + ") with value: " + str(value)) 
+            print("+ F" + str(opt) + " Submit value " + str(value) + " to '" + str(device_name) + "' (idx: " + str(idx) + ")") 
             requestPost = ( "http://" + str(domoip) + ":" + str(domoport) + "/json.htm?type=command&param=udevice&idx=" + str(idx) + "&svalue=" + str(value) )
-            print(requestPost)
+            #print(requestPost)
             resultPost = urllib.request.urlopen(requestPost)
-            print("")
-
+        
 print ("---------------------------------------------------------------------------------------")
 print ("End data received: %s" % heat_timestamp)
 print ("=======================================================================================") 
