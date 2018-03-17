@@ -10,9 +10,9 @@ Syntax:  `multical402-4-domoticz.py <DEVICE> <IDX>:<DECIMALNUMBER>:<FUNCTION>,<I
 Example: `multical402-4-domoticz.py /dev/ttyUSB2 327:60:2:323,322:60:1:323,323:60:0`
 
 There are three different functions that must be defined by etiher 0, 1 or 2
- * `0` = Overwrite device with latest value  
- * `1` = Substract latest minus latest total which results in usage in last X minutes
- * `2` = Add value of one device to another device  
+ * `0` = Overwrite device (in domoticz) with latest value (multical) 
+ * `1` = Substract current value (Multical) minus last known value (in domoticz) which results in usage between runs
+ * `2` = Add value (for example the current value) of one device to another device  
 
 If `1` or `2` is specified another device must be defined so this script can compare both (the example above has both functions).  
 
