@@ -37,10 +37,36 @@ debug = 0
 
 kamstrup_402_var = {                # Decimal Number in Command
  0x003C: "Heat Energy (E1)",        #60
- 0x0056: "Temp 1",                  #86
- 0x0057: "Temp 2",        	    #87
+ 0x0050: "Power",                   #80
+ 0x0056: "Temp1",                   #86
+ 0x0057: "Temp2",                   #87
+ 0x0059: "Tempdiff",                #89
  0x004A: "Flow",                    #74
  0x0044: "Volume",                  #68
+ 0x008D: "MinFlow_M",               #141
+ 0x008B: "MaxFlow_M",               #139
+ 0x008C: "MinFlowDate_M",           #140
+ 0x008A: "MaxFlowDate_M",           #138
+ 0x0091: "MinPower_M",              #145
+ 0x008F: "MaxPower_M",              #143
+ 0x0095: "AvgTemp1_M",              #149
+ 0x0096: "AvgTemp2_M",              #150
+ 0x0090: "MinPowerDate_M",          #144
+ 0x008E: "MaxPowerDate_M",          #142
+ 0x007E: "MinFlow_Y",               #126
+ 0x007C: "MaxFlow_Y",               #124
+ 0x007D: "MinFlowDate_Y",           #125
+ 0x007B: "MaxFlowDate_Y",           #123
+ 0x0082: "MinPower_Y",              #130
+ 0x0080: "MaxPower_Y",              #128
+ 0x0092: "AvgTemp1_Y",              #146
+ 0x0093: "AvgTemp2_Y",              #147
+ 0x0081: "MinPowerDate_Y",          #129
+ 0x007F: "MaxPowerDate_Y",          #127
+ 0x0061: "Temp1xm3",                #97
+ 0x006E: "Temp2xm3",                #110
+ 0x0071: "Infoevent",               #113
+ 0x03EC: "HourCounter",             #1004
 }
 
 #######################################################################
@@ -106,7 +132,18 @@ class kamstrup(object):
         self.ser = serial.Serial(
             port = serial_port,
             baudrate = 1200,
-            timeout = 2.0)
+            timeout = 20,
+            bytesize = serial.EIGHTBITS,
+            parity = serial.PARITY_NONE,
+            stopbits = serial.STOPBITS_TWO)
+#            xonxoff = 0,
+#            rtscts = 0)
+#           timeout = 20
+
+#        self.ser = serial.Serial(
+#            port = serial_port,
+#            baudrate = 1200,
+#            timeout = 2.0)
 
     def debug(self, dir, b):
         for i in b:
