@@ -1,5 +1,4 @@
 #!/usr/bin/python
-#
 # ----------------------------------------------------------------------------
 # "THE BEER-WARE LICENSE" (Revision 42):
 # <phk@FreeBSD.ORG> wrote this file.  As long as you retain this notice you
@@ -36,7 +35,7 @@ domoport = "8080"
 debug = 0
 
 kamstrup_402_var = {                # Decimal Number in Command
- 0x003C: "Heat Energy (E1)",        #60
+ 0x003C: "Heat Energy (E1)",         #60
  0x0050: "Power",                   #80
  0x0056: "Temp1",                   #86
  0x0057: "Temp2",                   #87
@@ -322,7 +321,7 @@ for i in kamstrup_402_var:
     x,u = foo.readvar(i)
     
     print("%-25s" % kamstrup_402_var[i], x, u)
-    
+
     for y in index:
         paramater = y.split(':')
         idx = int(paramater[0],0)
