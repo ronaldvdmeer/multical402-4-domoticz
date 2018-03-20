@@ -32,7 +32,7 @@ reader = codecs.getreader("utf-8")
 
 domoip = "192.168.1.12"
 domoport = "8080"
-debug = 0
+debug = 1
 
 kamstrup_402_var = {                # Decimal Number in Command
  0x003C: "Heat Energy (E1)",         #60
@@ -131,18 +131,13 @@ class kamstrup(object):
         self.ser = serial.Serial(
             port = serial_port,
             baudrate = 1200,
-            timeout = 20,
+            timeout = 5.0,
             bytesize = serial.EIGHTBITS,
             parity = serial.PARITY_NONE,
             stopbits = serial.STOPBITS_TWO)
 #            xonxoff = 0,
 #            rtscts = 0)
 #           timeout = 20
-
-#        self.ser = serial.Serial(
-#            port = serial_port,
-#            baudrate = 1200,
-#            timeout = 2.0)
 
     def debug(self, dir, b):
         for i in b:
@@ -319,8 +314,10 @@ print ("------------------------------------------------------------------------
 
 for i in kamstrup_402_var:
     x,u = foo.readvar(i)
+    r = 0
     
     print("%-25s" % kamstrup_402_var[i], x, u)
+        
 
     for y in index:
         paramater = y.split(':')
@@ -332,23 +329,31 @@ for i in kamstrup_402_var:
             compare_idx = int(paramater[3],0)
         except IndexError:
             compare_idx = 0
+            
         
         # If decimal number matches the command given as argv[2]
         if i == dcNr:
-            value = x
+            value = round(x,2)
 
             # Retrieve devicename and devicedata
             requestGet = ( "http://" + str(domoip) + ":" + str(domoport) + "/json.htm?type=devices&rid=" + str(idx) )
             device_data = json.load(reader(urllib.request.urlopen(requestGet)))
             device_name = device_data['result'][0]['Name']
             device_value = device_data['result'][0]['Data']
+            if debug > 0:
+                print("+ Last stored value for device: " + device_name + " was " + device_value)
+
+            
+            if debug > 0: 
+                print("+ Processing parameter: " + str(y) + "")
 
             # 0 = Update current
             # 1 = Substraction
             # 2 = Addition
             if opt == 0:
                 # Submit the current value to the device
-                #print("+ Overiwrite: " + str(device_name) + " (idx: " + str(idx) + ") with latest value: " + str(value)) 
+                if debug > 0:
+                    print("  + F" + str(opt) + " Debug: Overwrite: " + str(device_name) + " (idx: " + str(idx) + ") with latest value: " + str(value)) 
                 dummyvar = 0
             elif opt == 1:
                 if compare_idx > 0:
@@ -359,9 +364,10 @@ for i in kamstrup_402_var:
                     device_compare_value = device_compare_value.split(' ')
                     device_compare_value = device_compare_value[0]
                     diff = float(value) - float(device_compare_value)
-                    
+                    diff = round(diff,2) 
+
                     if debug > 0: 
-                        print("+ Substract " + str(device_compare_value) + " (idx:" + str(compare_idx) + ") from " + str(value) + " (idx:" + str(idx) + ") = " + str(diff) )
+                        print("  + F" + str(opt) + " Debug: Substract " + str(device_compare_value) + " (idx:" + str(compare_idx) + ") from " + str(value) + " (idx:" + str(idx) + ") = " + str(diff) )
                     
                     value = diff
 
@@ -377,18 +383,22 @@ for i in kamstrup_402_var:
                     device_compare_value = device_compare_value.split(' ')
                     device_compare_value = device_compare_value[0]
                     diff = float(value) - float(device_compare_value)
+                    diff = round(diff,2) 
+                    
                     addup = float(diff) + float(device_value)
+                    addup = round(addup,2) 
                     
                     if debug > 0: 
-                        print("+ Add " + str(device_value) + " (idx:" + str(idx) + ") + " + str(diff) + " (" + str(value) + " (idx:" + str(idx) + ") - " + str(device_compare_value) + " (idx:" + str(compare_idx) + ")) = " + str(addup) )
+                        print("  + F" + str(opt) + " Debug: Addition " + str(device_value) + " (idx:" + str(idx) + ") + " + str(diff) + " (" + str(value) + " (idx:" + str(idx) + ") - " + str(device_compare_value) + " (idx:" + str(compare_idx) + ")) = " + str(addup) )
 
                     value = addup
 
             # Upload the current value to the device
-            print("+ F" + str(opt) + " Submit value " + str(value) + " to '" + str(device_name) + "' (idx: " + str(idx) + ")") 
+            print("  + F" + str(opt) + " Submit value " + str(value) + " to '" + str(device_name) + "' (idx: " + str(idx) + ")") 
             requestPost = ( "http://" + str(domoip) + ":" + str(domoport) + "/json.htm?type=command&param=udevice&idx=" + str(idx) + "&svalue=" + str(value) )
             #print(requestPost)
             resultPost = urllib.request.urlopen(requestPost)
+            
         
 print ("---------------------------------------------------------------------------------------")
 print ("End data received: %s" % heat_timestamp)
