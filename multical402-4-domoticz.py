@@ -313,12 +313,8 @@ print ("Meter vendor/type: Kamstrup M402")
 print ("---------------------------------------------------------------------------------------")
 
 for i in kamstrup_402_var:
-    x,u = foo.readvar(i)
     r = 0
-    
-    print("%-25s" % kamstrup_402_var[i], x, u)
         
-
     for y in index:
         paramater = y.split(':')
         idx = int(paramater[0],0)
@@ -333,6 +329,10 @@ for i in kamstrup_402_var:
         
         # If decimal number matches the command given as argv[2]
         if i == dcNr:
+            x,u = foo.readvar(i)
+          
+            print("%-25s" % kamstrup_402_var[i], x, u)
+           
             value = round(x,2)
 
             # Retrieve devicename and devicedata
