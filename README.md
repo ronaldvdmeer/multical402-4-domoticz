@@ -6,6 +6,7 @@ Dependency:
  * Software: linux, python3 and python3-serial  
  * Hardware: IR Optical Probe IEC1107 IEC61107  
   
+```
 usage: multical.py [-h] -d DEVICE [--ip IP] [--port PORT] [--verbose]
                    [--debug] [--test_kamstrup] [--test_domoticz]
                    [values [values ...]]
@@ -40,7 +41,7 @@ Devices (Virtual Sensors) must be defined before they can be used! To do this,
 opt=0 writes the value from "CommandNr" to Domoticz device "idx".
 opt=1 takes the value from  "CommandNr", subtracts the value of Domoticz "idx2", and stores this in "idx".
 opt=2 takes the value from "CommandNr", adds the value of Domoticz device "idx2", and stores this in "idx".
-
+```
 
 You must atleast execute this script once every 30 minutes or else the IR port on the Kamstrup will be disabled until you press a physical button on the device itself. This can be done with cron: `crontab -e` and then add something like:
 
