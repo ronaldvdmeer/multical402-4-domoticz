@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # ----------------------------------------------------------------------------
 # "THE BEER-WARE LICENSE" (Revision 42):
 # <phk@FreeBSD.ORG> wrote this file.  As long as you retain this notice you
@@ -10,8 +10,7 @@
 #
 # Modified by Ronald van der Meer, Frank Reijn and Paul Bonnemaijers for the
 # Kamstrup Multical 402
-#
-# Usage: __file__ <ComPort>
+# Later modified by Hans van Schoot for easier usage
 #
 
 from __future__ import print_function
@@ -29,10 +28,6 @@ import codecs
 # Variables
 
 reader = codecs.getreader("utf-8")
-
-domoip = "192.168.1.12"
-domoport = "8080"
-debug = 1
 
 kamstrup_402_var = {                # Decimal Number in Command
  0x003C: "Heat Energy (E1)",         #60
@@ -276,36 +271,82 @@ class kamstrup(object):
 if __name__ == "__main__":
 
     import time
+    import argparse
+    import os
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""Values are expected in the format:
+   "idx:CommandNr:opt" (for opt=0) 
+   "idx:CommandNr:opt:idx2" (for opt=1 or opt=2). 
+CommandNr can be found using the --test_kamstrup option 
+idx can be found in the "Setup > Devices" list of the Domoticz web interface,
+  or by using the --test_domoticz option. 
 
-    try:
-        comport = sys.argv[1]
-    except IndexError:
-        print("Device required. Example: /dev/ttyUSB0")
-        sys.exit()
+Devices (Virtual Sensors) must be defined before they can be used! To do this,
+   start by adding a "Dummy" type hardware entry. This Dummy hardware then allows
+   for creating "Create Virtual Sensors". 
+   For example, a Virtual Sensor of type "Custom Sensor" with Axis Label "Gj" can 
+   be used for recording the "Heat Energy (E1)".
+
+opt=0 writes the value from "CommandNr" to Domoticz device "idx".
+opt=1 takes the value from  "CommandNr", subtracts the value of Domoticz "idx2", and stores this in "idx".
+opt=2 takes the value from "CommandNr", adds the value of Domoticz device "idx2", and stores this in "idx".
+"""
+            )
+    parser.add_argument("-d", "--device", type=str, help="Device to use. Example: /dev/ttyUSB0", required=True)
+    parser.add_argument("--ip", type=str, help="Domoticz ip address. Defaults to localhost", default="localhost")
+    parser.add_argument("--port", type=int, help="Domoticz port. Defaults to 8080", default=8080)
+    parser.add_argument("--verbose", help="Make this script more verbose", action="store_true")
+    parser.add_argument("--debug", help="Make this script print debug output", action="store_true")
+    parser.add_argument("--test_kamstrup", help="Test the IR interface of the Kamstrup and exit", action="store_true")
+    parser.add_argument("--test_domoticz", help="Test the connection with Domoticz and exit ", action="store_true")
+    parser.add_argument("values", type=str, help="idx:CommandNr:opt or idx:CommandNR:opt:idx2", nargs='*')
     
-    # Previous Script had multiple arguments, commented this out for different usage
-    #
-    #command = int( sys.argv[2], 0)
-
-    try:
-        index = str( sys.argv[2] )
-    except IndexError:
-        print("Domoticz variables required. This script can not be executed without it")
+    args = parser.parse_args()
+    
+    # some sanity checks
+    if not os.path.exists(args.device):
+        print("Error! failed to locate specified device: %s" %(args.device))
+        sys.exit(1)
+    for value in args.values:
+        # check they have the correct format
+        blub=0
+        try:
+            blub=len(value.split(':'))
+        except:
+            print("Error! make sure to format your values correctly!")
+            sys.exit(1)
+        if not (blub == 3 or blub == 4):
+            print("Error! make sure to format your values correctly!")
+            sys.exit(1)
+    if not (args.test_kamstrup or args.test_domoticz) and len(args.values) == 0:
+        print("This script needs values to do someting! Check --help to see how it works!")
         sys.exit()
 
-    index = index.split(',')
+    # some easier names
+    domoip = args.ip
+    domoport = args.port
 
-    if debug > 0: 
-        print("Parameter specified: ")
-        for i in index:
-            print("+ " + i)
-
-    foo = kamstrup( comport )
+    foo = kamstrup( args.device )
     heat_timestamp=datetime.datetime.strftime(datetime.datetime.today(), "%Y-%m-%d %H:%M:%S" )
     
-    # This command seems to have different outputs, left out for that.
-    #
-    # kamstrup_402_var = int(kamstrup_402_var * 1000)
+    if args.test_kamstrup:
+        for i in kamstrup_402_var:
+            x,u = foo.readvar(i)
+            print("CommandNr %4i: %-25s" %(i, kamstrup_402_var[i]), x, u)
+        sys.exit()
+
+    if args.test_domoticz:
+        requestGet = ( "http://" + str(domoip) + ":" + str(domoport) + "/json.htm?type=devices" )
+        domo_data = json.load(reader(urllib.request.urlopen(requestGet)))
+        for device in domo_data['result']:
+            device_idx = device['idx']
+            device_name = device['Name']
+            device_value = device['Data']
+            print("idx: %5s, Name: %-60s, Value: %s" %(device_idx, device_name, device_value))
+        # if args.debug:
+        #     print("+ Last stored value for device: " + device_name + " was " + device_value)
+        sys.exit()
+#    print(args.values)
     
 print ("=======================================================================================")
 print ("Kamstrup Multical 402 serial optical data received: %s" % heat_timestamp)
@@ -315,7 +356,7 @@ print ("------------------------------------------------------------------------
 for i in kamstrup_402_var:
     r = 0
         
-    for y in index:
+    for y in args.values:
         paramater = y.split(':')
         idx = int(paramater[0],0)
         dcNr = int(paramater[1],0)
@@ -340,11 +381,11 @@ for i in kamstrup_402_var:
             device_data = json.load(reader(urllib.request.urlopen(requestGet)))
             device_name = device_data['result'][0]['Name']
             device_value = device_data['result'][0]['Data']
-            if debug > 0:
+            if args.debug:
                 print("+ Last stored value for device: " + device_name + " was " + device_value)
 
             
-            if debug > 0: 
+            if args.debug: 
                 print("+ Processing parameter: " + str(y) + "")
 
             # 0 = Update current
@@ -352,7 +393,7 @@ for i in kamstrup_402_var:
             # 2 = Addition
             if opt == 0:
                 # Submit the current value to the device
-                if debug > 0:
+                if args.debug:
                     print("  + F" + str(opt) + " Debug: Overwrite: " + str(device_name) + " (idx: " + str(idx) + ") with latest value: " + str(value)) 
                 dummyvar = 0
             elif opt == 1:
@@ -366,7 +407,7 @@ for i in kamstrup_402_var:
                     diff = float(value) - float(device_compare_value)
                     diff = round(diff,2) 
 
-                    if debug > 0: 
+                    if args.debug: 
                         print("  + F" + str(opt) + " Debug: Substract " + str(device_compare_value) + " (idx:" + str(compare_idx) + ") from " + str(value) + " (idx:" + str(idx) + ") = " + str(diff) )
                     
                     value = diff
@@ -388,7 +429,7 @@ for i in kamstrup_402_var:
                     addup = float(diff) + float(device_value)
                     addup = round(addup,2) 
                     
-                    if debug > 0: 
+                    if args.debug: 
                         print("  + F" + str(opt) + " Debug: Addition " + str(device_value) + " (idx:" + str(idx) + ") + " + str(diff) + " (" + str(value) + " (idx:" + str(idx) + ") - " + str(device_compare_value) + " (idx:" + str(compare_idx) + ")) = " + str(addup) )
 
                     value = addup
@@ -403,5 +444,6 @@ for i in kamstrup_402_var:
 print ("---------------------------------------------------------------------------------------")
 print ("End data received: %s" % heat_timestamp)
 print ("=======================================================================================") 
+
 
 
