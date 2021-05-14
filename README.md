@@ -6,25 +6,42 @@ Dependency:
  * Software: linux, python3 and python3-serial  
  * Hardware: IR Optical Probe IEC1107 IEC61107  
   
-Syntax:  `multical402-4-domoticz.py <DEVICE> <IDX>:<DECIMALNUMBER>:<FUNCTION>,<IDX>:<DECIMALNUMBER>:<FUNCTION>:<OPTIONALDEVICE>,...`  
-Example: `multical402-4-domoticz.py /dev/ttyUSB2 327:60:2:323,322:60:1:323,323:60:0`
-  
-You are able to define multiple idx > decimalnumber calculations by seperating them with commas. In the example above three virtual devices (domoticz) are updated all in one run and with different calculatoins. 
-  
-There are three different functions that must be defined by etiher 0, 1 or 2
- * `0` = Overwrite device (in domoticz) with latest value (multical) 
- * `1` = Substract current value (Multical) minus last known value (in domoticz) which results in usage between runs
- * `2` = Add value (for example the current value) of one device to another device  
-  
-If `1` or `2` is specified another device must be defined so this script can compare both (the example above has both functions).  
-  
-In the example above there are 3 calculations done:
- * `327:60:2:323` = The device idx 327 (domoticz) is linked to value defined as the decimal number 60 (multical). Because function 2 is selected it will add the value of idx 323 to idx 327 
- * `322:60:1:323` = The device idx 322 (domoticz) is linked to value defined as the decimal number 60 (multical). Because function 1 is selected it will substract the value of idx 323 and calculate the difference and write it to idx 322
- * `323:60:0` = The device idx 323 (domoticz) is linked to value defined as the decimal number 60 (multical). Because function 0 is selected the value in domoticz is overwritten with the current value from the multical. 
-  
-[![domoticz-heatusage.png](https://s14.postimg.org/zd6pmx4vl/domoticz-heatusage.png)](https://postimg.org/image/70b7wgj59/)
+usage: multical.py [-h] -d DEVICE [--ip IP] [--port PORT] [--verbose]
+                   [--debug] [--test_kamstrup] [--test_domoticz]
+                   [values [values ...]]
 
-You must atleast execute this script once every 30 minutes or else the IR port on the Kamstrup will be disabled until you press a physical button on the device itself.    
+positional arguments:
+  values                idx:CommandNr:opt or idx:CommandNR:opt:idx2
 
-`*/20 *  * * *   root    /usr/bin/python3 /usr/local/sbin/multical402-4-domoticz/multical402-4-domoticz.py /dev/ttyUSB2 324:60:2:323,325:60:2:323,325:60:2:323,326:60:2:323,327:60:2:323,322:60:1:323,323:60:0`
+optional arguments:
+  -h, --help            show this help message and exit
+  -d DEVICE, --device DEVICE
+                        Device to use. Example: /dev/ttyUSB0
+  --ip IP               Domoticz ip address. Defaults to localhost
+  --port PORT           Domoticz port. Defaults to 8080
+  --verbose             Make this script more verbose
+  --debug               Make this script print debug output
+  --test_kamstrup       Test the IR interface of the Kamstrup and exit
+  --test_domoticz       Test the connection with Domoticz and exit
+
+Values are expected in the format:
+   "idx:CommandNr:opt" (for opt=0) 
+   "idx:CommandNr:opt:idx2" (for opt=1 or opt=2). 
+CommandNr can be found using the --test_kamstrup option 
+idx can be found in the "Setup > Devices" list of the Domoticz web interface,
+  or by using the --test_domoticz option. 
+
+Devices (Virtual Sensors) must be defined before they can be used! To do this,
+   start by adding a "Dummy" type hardware entry. This Dummy hardware then allows
+   for creating "Create Virtual Sensors". 
+   For example, a Virtual Sensor of type "Custom Sensor" with Axis Label "Gj" can 
+   be used for recording the "Heat Energy (E1)".
+
+opt=0 writes the value from "CommandNr" to Domoticz device "idx".
+opt=1 takes the value from  "CommandNr", subtracts the value of Domoticz "idx2", and stores this in "idx".
+opt=2 takes the value from "CommandNr", adds the value of Domoticz device "idx2", and stores this in "idx".
+
+
+You must atleast execute this script once every 30 minutes or else the IR port on the Kamstrup will be disabled until you press a physical button on the device itself. This can be done with cron: `crontab -e` and then add something like:
+
+`*/20 *  * * * /usr/bin/python3 /path/to/your/script/multical402-4-domoticz.py -d /dev/ttyUSB1 88:60:0 89:80:0`
