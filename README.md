@@ -1,4 +1,6 @@
 # multical402-4-domoticz
+
+**Due to the fact that I no longer use domoticz but instead switched to Home Assistant ive archived this repostory. Perhaps have a look at https://github.com/gertvdijk/PyKMP**
   
 This script is developed for use with domoticz and a Kamstrup Multical 402 (city heating)  
   
