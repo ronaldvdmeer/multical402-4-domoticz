@@ -1,5 +1,11 @@
 # multical402-4-domoticz
 
+[![Python 3.7+](https://img.shields.io/badge/Python-3.7%2B-blue)](https://python.org/)
+[![Type Hints](https://img.shields.io/badge/type%20hints-100%25-green)](https://docs.python.org/3/library/typing.html)
+[![Code Style: PEP 8](https://img.shields.io/badge/code%20style-PEP%208-blue)](https://peps.python.org/pep-0008/)
+[![License: Beer-ware](https://img.shields.io/badge/License-Beer--ware-yellow)](https://en.wikipedia.org/wiki/Beerware)
+[![Status: Archived](https://img.shields.io/badge/status-archived-red)](https://github.com/ronaldvdmeer/multical402-4-domoticz)
+
 **⚠️ ARCHIVED REPOSITORY: The original author no longer uses Domoticz and has switched to Home Assistant. For an alternative, check out [PyKMP](https://github.com/gertvdijk/PyKMP)**
 
 ---
