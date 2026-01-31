@@ -1,13 +1,31 @@
 # multical402-4-domoticz
 
-**Due to the fact that I no longer use domoticz but instead switched to Home Assistant ive archived this repostory. Perhaps have a look at https://github.com/gertvdijk/PyKMP**
-  
-This script is developed for use with domoticz and a Kamstrup Multical 402 (city heating)  
-  
-Dependency:
- * Software: linux, python3 and python3-serial  
- * Hardware: IR Optical Probe IEC1107 IEC61107  
-  
+**⚠️ ARCHIVED REPOSITORY: The original author no longer uses Domoticz and has switched to Home Assistant. For an alternative, check out [PyKMP](https://github.com/gertvdijk/PyKMP)**
+
+---
+
+## 🎉 Refactored Version Available!
+
+This project has been **completely refactored** with modern Python best practices:
+- ✅ Modular architecture (5 separate modules)
+- ✅ Full type hints and documentation
+- ✅ Proper error handling and logging
+- ✅ Clean, maintainable code
+
+**See [README_REFACTORED.md](README_REFACTORED.md) for the improved version!**
+
+---
+
+## Original Documentation
+
+This script reads data from a Kamstrup Multical 402 heat meter (city heating) and sends it to Domoticz.
+
+### Dependencies
+- **Software:** Linux, Python 3.7+, pyserial
+- **Hardware:** IR Optical Probe IEC1107/IEC61107
+
+### Usage
+
 ```
 usage: multical.py [-h] -d DEVICE [--ip IP] [--port PORT] [--verbose]
                    [--debug] [--test_kamstrup] [--test_domoticz]
@@ -30,6 +48,7 @@ optional arguments:
 Values are expected in the format:
    "idx:CommandNr:opt" (for opt=0) 
    "idx:CommandNr:opt:idx2" (for opt=1 or opt=2). 
+
 CommandNr can be found using the --test_kamstrup option 
 idx can be found in the "Setup > Devices" list of the Domoticz web interface,
   or by using the --test_domoticz option. 
@@ -41,10 +60,44 @@ Devices (Virtual Sensors) must be defined before they can be used! To do this,
    be used for recording the "Heat Energy (E1)".
 
 opt=0 writes the value from "CommandNr" to Domoticz device "idx".
-opt=1 takes the value from  "CommandNr", subtracts the value of Domoticz "idx2", and stores this in "idx".
-opt=2 takes the value from "CommandNr", adds the value of Domoticz device "idx2", and stores this in "idx".
+opt=1 takes the value from "CommandNr", subtracts the value of Domoticz "idx2", 
+      and stores this in "idx".
+opt=2 takes the value from "CommandNr", adds the value of Domoticz device "idx2", 
+      and stores this in "idx".
 ```
 
-You must atleast execute this script once every 30 minutes or else the IR port on the Kamstrup will be disabled until you press a physical button on the device itself. This can be done with cron: `crontab -e` and then add something like:
+### ⚠️ Important: Automatic Execution Required
 
-`*/20 *  * * * /usr/bin/python3 /path/to/your/script/multical402-4-domoticz.py -d /dev/ttyUSB1 88:60:0 89:80:0`
+You must execute this script **at least once every 30 minutes** to prevent the Kamstrup IR port from disabling itself. If disabled, you'll need to press a physical button on the device to re-enable it.
+
+Set up automatic execution with cron:
+
+```bash
+crontab -e
+```
+
+Add this line (adjust paths as needed):
+
+```bash
+*/20 * * * * /usr/bin/python3 /path/to/your/script/multical402-4-domoticz.py -d /dev/ttyUSB1 88:60:0 89:80:0
+```
+
+---
+
+## 📚 Further Information
+
+For detailed documentation on the refactored version, including:
+- Complete API documentation
+- Architecture diagrams
+- Usage examples and troubleshooting
+- Installation guide
+
+**Please refer to [README_REFACTORED.md](README_REFACTORED.md)**
+
+---
+
+## Credits
+
+Original work by Poul-Henning Kamp (Beer-ware license)  
+Modified by Ronald van der Meer, Frank Reijn, Paul Bonnemaijers, and Hans van Schoot  
+Refactored for improved maintainability and modern Python standards

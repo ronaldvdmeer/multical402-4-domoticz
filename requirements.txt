@@ -1,0 +1,14 @@
+# Kamstrup Multical 402 to Domoticz Integration
+# Python dependencies
+
+# Serial communication
+pyserial>=3.5
+
+# Note: Standard library modules used (no additional dependencies):
+# - json
+# - urllib
+# - logging
+# - argparse
+# - datetime
+# - dataclasses (Python 3.7+)
+# - typing (Python 3.5+)
