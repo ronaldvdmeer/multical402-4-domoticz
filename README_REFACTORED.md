@@ -49,7 +49,7 @@ cd multical402-4-domoticz
 pip install -r requirements.txt
 
 # Make script executable (Linux/Mac)
-chmod +x multical402_domoticz.py
+chmod +x multical402.py
 ```
 
 ---
@@ -62,8 +62,8 @@ multical402-4-domoticz/
 ├── kamstrup_reader.py           # Serial communication with Kamstrup device
 ├── domoticz_client.py           # Domoticz API client
 ├── value_processor.py           # Value processing logic (modes 0, 1, 2)
-├── multical402_domoticz.py      # Main application entry point ⭐
-├── multical402-4-domoticz.py    # Original legacy script (for reference)
+├── multical402.py               # Main application entry point ⭐
+├── multical402_legacy.py        # Original legacy script (for reference)
 ├── requirements.txt             # Python dependencies
 ├── README.md                    # Original documentation
 ├── README_REFACTORED.md         # This file
@@ -88,7 +88,7 @@ Implements the three processing modes with clear separation of logic:
 - Mode 1: Subtract comparison value
 - Mode 2: Add difference to stored value
 
-**multical402_domoticz.py** ⭐  
+**multical402.py** ⭐  
 The main refactored script - use this for new deployments! Features clean application flow, comprehensive error handling, and proper logging.
 
 ---
@@ -100,7 +100,7 @@ The main refactored script - use this for new deployments! Features clean applic
 Verify communication with your Kamstrup device:
 
 ```bash
-python multical402_domoticz.py -d /dev/ttyUSB0 --test_kamstrup
+python multical402.py -d /dev/ttyUSB0 --test_kamstrup
 ```
 
 This will read and display all available variables from the device.
@@ -110,7 +110,7 @@ This will read and display all available variables from the device.
 Verify connection to your Domoticz server:
 
 ```bash
-python multical402_domoticz.py --ip 192.168.1.100 --test_domoticz
+python multical402.py --ip 192.168.1.100 --test_domoticz
 ```
 
 This will list all devices in your Domoticz installation with their indices.
@@ -120,7 +120,7 @@ This will list all devices in your Domoticz installation with their indices.
 Read values from Kamstrup and update Domoticz devices:
 
 ```bash
-python multical402_domoticz.py -d /dev/ttyUSB0 88:60:0 89:80:0
+python multical402.py -d /dev/ttyUSB0 88:60:0 89:80:0
 ```
 
 ---
@@ -130,7 +130,7 @@ python multical402_domoticz.py -d /dev/ttyUSB0 88:60:0 89:80:0
 ### Command Line Syntax
 
 ```bash
-python multical402_domoticz.py [OPTIONS] [VALUES...]
+python multical402.py [OPTIONS] [VALUES...]
 ```
 
 ### Options
@@ -201,7 +201,7 @@ Calculates the difference from a comparison device and adds it to the target dev
 Read heat energy and power, update Domoticz:
 
 ```bash
-python multical402_domoticz.py -d /dev/ttyUSB0 \
+python multical402.py -d /dev/ttyUSB0 \
     100:60:0 \    # Heat Energy to device 100
     101:80:0      # Power to device 101
 ```
@@ -209,7 +209,7 @@ python multical402_domoticz.py -d /dev/ttyUSB0 \
 ### Advanced Setup with Calculations
 
 ```bash
-python multical402_domoticz.py -d /dev/ttyUSB0 --ip 192.168.1.50 \
+python multical402.py -d /dev/ttyUSB0 --ip 192.168.1.50 \
     100:60:0 \        # Direct heat energy reading
     101:80:0 \        # Direct power reading
     102:68:2:103 \    # Cumulative volume (subtract device 103, add to 102)
@@ -220,7 +220,7 @@ python multical402_domoticz.py -d /dev/ttyUSB0 --ip 192.168.1.50 \
 ### With Verbose Logging
 
 ```bash
-python multical402_domoticz.py -d /dev/ttyUSB0 --verbose \
+python multical402.py -d /dev/ttyUSB0 --verbose \
     88:60:0 89:80:0
 ```
 
@@ -229,7 +229,7 @@ python multical402_domoticz.py -d /dev/ttyUSB0 --verbose \
 For troubleshooting communication issues:
 
 ```bash
-python multical402_domoticz.py -d /dev/ttyUSB0 --debug \
+python multical402.py -d /dev/ttyUSB0 --debug \
     --debug-file /var/log/kamstrup_debug.log \
     88:60:0
 ```
@@ -262,7 +262,7 @@ Before running the script, you must create Virtual Sensors in Domoticz:
 3. **Note Device Indices**
    - Go to **Setup → Devices**
    - Note the **idx** number for each sensor
-   - Or use: `python multical402_domoticz.py --test_domoticz`
+   - Or use: `python multical402.py --test_domoticz`
 
 ---
 
@@ -306,17 +306,17 @@ Add one of these lines:
 
 **Every 20 minutes (recommended):**
 ```bash
-*/20 * * * * /usr/bin/python3 /path/to/multical402_domoticz.py -d /dev/ttyUSB0 88:60:0 89:80:0
+*/20 * * * * /usr/bin/python3 /path/to/multical402.py -d /dev/ttyUSB0 88:60:0 89:80:0
 ```
 
 **Every 15 minutes (safer margin):**
 ```bash
-*/15 * * * * /usr/bin/python3 /path/to/multical402_domoticz.py -d /dev/ttyUSB0 88:60:0 89:80:0
+*/15 * * * * /usr/bin/python3 /path/to/multical402.py -d /dev/ttyUSB0 88:60:0 89:80:0
 ```
 
 **With logging:**
 ```bash
-*/20 * * * * /usr/bin/python3 /path/to/multical402_domoticz.py -d /dev/ttyUSB0 88:60:0 89:80:0 >> /var/log/kamstrup.log 2>&1
+*/20 * * * * /usr/bin/python3 /path/to/multical402.py -d /dev/ttyUSB0 88:60:0 89:80:0 >> /var/log/kamstrup.log 2>&1
 ```
 
 ### Verify Cron is Working
@@ -419,7 +419,7 @@ sudo usermod -a -G dialout $USER
 ### Custom Debug File Location
 
 ```bash
-python multical402_domoticz.py -d /dev/ttyUSB0 \
+python multical402.py -d /dev/ttyUSB0 \
     --debug \
     --debug-file /var/log/kamstrup_$(date +%Y%m%d).log \
     88:60:0
@@ -431,10 +431,10 @@ If you have multiple Kamstrup meters:
 
 ```bash
 # Meter 1
-python multical402_domoticz.py -d /dev/ttyUSB0 100:60:0 101:80:0
+python multical402.py -d /dev/ttyUSB0 100:60:0 101:80:0
 
 # Meter 2
-python multical402_domoticz.py -d /dev/ttyUSB1 200:60:0 201:80:0
+python multical402.py -d /dev/ttyUSB1 200:60:0 201:80:0
 ```
 
 ### Monitoring Script Execution
@@ -445,7 +445,7 @@ Create a wrapper script for better monitoring:
 #!/bin/bash
 LOG="/var/log/kamstrup.log"
 echo "$(date): Starting Kamstrup read" >> $LOG
-/usr/bin/python3 /path/to/multical402_domoticz.py -d /dev/ttyUSB0 88:60:0 89:80:0 >> $LOG 2>&1
+/usr/bin/python3 /path/to/multical402.py -d /dev/ttyUSB0 88:60:0 89:80:0 >> $LOG 2>&1
 echo "$(date): Finished (exit code: $?)" >> $LOG
 ```
 
@@ -476,13 +476,13 @@ Currently no automated tests, but you can test manually:
 
 ```bash
 # Test Kamstrup communication
-python multical402_domoticz.py -d /dev/ttyUSB0 --test_kamstrup
+python multical402.py -d /dev/ttyUSB0 --test_kamstrup
 
 # Test Domoticz API
-python multical402_domoticz.py --test_domoticz
+python multical402.py --test_domoticz
 
 # Test with verbose output
-python multical402_domoticz.py -d /dev/ttyUSB0 --verbose 88:60:0
+python multical402.py -d /dev/ttyUSB0 --verbose 88:60:0
 ```
 
 ### Future Improvements

@@ -85,7 +85,7 @@ crontab -e
 Add this line (adjust paths as needed):
 
 ```bash
-*/20 * * * * /usr/bin/python3 /path/to/your/script/multical402-4-domoticz.py -d /dev/ttyUSB1 88:60:0 89:80:0
+*/20 * * * * /usr/bin/python3 /path/to/your/script/multical402.py -d /dev/ttyUSB0 88:60:0 89:80:0
 ```
 
 ---
